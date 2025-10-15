@@ -1,0 +1,44 @@
+## Compiled and build artifacts ##
+##################################
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+.vs/
+.history/
+*.pdb
+*.suo
+*.user
+*.userprefs
+*.log
+*.rptproj.user
+*.resharper
+*.[Pp]ublish/
+Temp/
+
+## Packages and Dependencies ##
+##############################
+# NuGet package folders
+packages/
+# The Nuget cache file
+.nuget/
+# Dependencies installed via npm, yarn, etc. (for tools used in the C# project)
+node_modules/
+
+## Visual Studio/IDE specific files ##
+#####################################
+# Visual Studio Code cache
+.vscode/
+
+# Ignore test results and code coverage files
+TestResults/
+coverlet/
+*.trx
+
+# Runtime and Configuration files
+# Used to store local secrets/configuration that shouldn't be committed
+appsettings.Development.json
+appsettings.Staging.json
+appsettings.Production.json
+appsettings.Local.json
+*.local.json

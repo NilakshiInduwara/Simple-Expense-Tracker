@@ -17,6 +17,7 @@ namespace ExpenseTracker.Controllers
             _dbContext = dbContext;
         }
 
+
         [HttpGet]
         public async Task<ActionResult<List<Expense>>> GetAllExpenses()
         {

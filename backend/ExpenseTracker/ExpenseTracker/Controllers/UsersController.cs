@@ -11,6 +11,10 @@ namespace ExpenseTracker.Controllers
     public class UsersController : ControllerBase
     {
         [HttpGet("id: int")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<User> GetUserById(int id)
         {
             // BadRequest - 400
@@ -24,6 +28,10 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpGet("{name:alpha}", Name = "GetUserByName")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<User> GetUserByName(string name) { 
             if(name.IsNullOrEmpty()) return BadRequest();
 
@@ -34,6 +42,10 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpDelete]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Route("{id:int}", Name = "DeleteUserById")]
         public ActionResult<bool> DeleteUser(int id) {
             if (id <= 0) return BadRequest();

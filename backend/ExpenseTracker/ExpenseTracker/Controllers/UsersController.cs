@@ -10,6 +10,16 @@ namespace ExpenseTracker.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<User> GetUsers()
+        {
+            return Ok(UserRepository.Users);
+        }
+
         [HttpGet("id: int")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

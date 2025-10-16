@@ -97,5 +97,29 @@ namespace ExpenseTracker.Controllers
             return Ok(true);
         }
 
+        [HttpPost]
+        [Route("create")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<UserDTO> CreateUser([FromBody] UserDTO model) { 
+            if(model == null) return BadRequest();
+
+            int newId = UserRepository.Users.LastOrDefault().Id + 1;
+
+            User user = new User() { 
+                Id = newId,
+                Name = model.Name,
+                Email = model.Email,
+                Password = model.Password,
+            };
+
+            UserRepository.Users.Add(user);
+
+            model.Id = newId;
+
+            return Ok(user);
+        }
+
     }
 }

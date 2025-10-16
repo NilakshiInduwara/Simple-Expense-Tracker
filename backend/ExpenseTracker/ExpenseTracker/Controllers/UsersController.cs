@@ -15,9 +15,29 @@ namespace ExpenseTracker.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<User> GetUsers()
+        public ActionResult<UserDTO> GetUsers()
         {
-            return Ok(UserRepository.Users);
+            /*var users = new List<UserDTO>();
+            foreach(var user in UserRepository.Users)
+            {
+                UserDTO obj = new UserDTO()
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Email = user.Email,
+                    Password = user.Password,
+                };
+                users.Add(obj);
+            }*/
+
+            var users = UserRepository.Users.Select(user => new UserDTO()
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Password = user.Password,
+            });
+            return Ok(users);
         }
 
         [HttpGet("id: int")]
@@ -34,7 +54,16 @@ namespace ExpenseTracker.Controllers
 
             // NotFound- 404
             if (user == null) return NotFound($"User with Id {id} not found.");
-            return Ok(user);
+
+            var userDTO = new UserDTO
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Password = user.Password,
+
+            };
+            return Ok(userDTO);
         }
 
         [HttpGet("{name:alpha}", Name = "GetUserByName")]

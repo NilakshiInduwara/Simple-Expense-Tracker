@@ -40,7 +40,7 @@ namespace ExpenseTracker.Controllers
             return Ok(users);
         }
 
-        [HttpGet("id: int")]
+        [HttpGet("{id:int}", Name = "GetUserById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -118,7 +118,7 @@ namespace ExpenseTracker.Controllers
 
             model.Id = newId;
 
-            return Ok(user);
+            return CreatedAtRoute("GetUserById", new { id = model.Id }, model);
         }
 
     }

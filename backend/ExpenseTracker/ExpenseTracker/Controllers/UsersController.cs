@@ -36,7 +36,7 @@ namespace ExpenseTracker.Controllers
                 Name = user.Name,
                 Email = user.Email,
                 Password = user.Password,
-            });
+            }).ToList();
             return Ok(users);
         }
 
@@ -45,7 +45,7 @@ namespace ExpenseTracker.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<User> GetUserById(int id)
+        public ActionResult<UserDTO> GetUserById(int id)
         {
             // BadRequest - 400
             if (id <= 0) return BadRequest();

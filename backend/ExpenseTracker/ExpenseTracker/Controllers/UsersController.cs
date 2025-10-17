@@ -105,7 +105,7 @@ namespace ExpenseTracker.Controllers
         public ActionResult<UserDTO> CreateUser([FromBody] UserDTO model) { 
             if(model == null) return BadRequest();
 
-            int newId = UserRepository.Users.LastOrDefault().Id + 1;
+            int newId = (UserRepository.Users.LastOrDefault()?.Id ?? 0) + 1;
 
             User user = new User() { 
                 Id = newId,

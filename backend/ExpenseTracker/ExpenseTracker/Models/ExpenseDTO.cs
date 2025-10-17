@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ExpenseTracker.Validators;
+using System.ComponentModel.DataAnnotations;
 
 namespace ExpenseTracker.Models
 {
@@ -11,6 +12,7 @@ namespace ExpenseTracker.Models
         [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "Expense must be greater than zero.")]
         public decimal ExpenseValue { get; set; }
+        [DateTimeCheck]
         public DateTime ExpenseDate { get; set; }
     }
 }

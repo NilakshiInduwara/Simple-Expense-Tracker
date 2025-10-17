@@ -21,6 +21,12 @@ namespace ExpenseTracker.Controllers
         {
             if (expenseDTO == null) return BadRequest();
 
+            /*if(expenseDTO.ExpenseDate > DateTime.Now)
+            {
+                ModelState.AddModelError("Expense Date Error", "Expense date should be today or a previous day");
+                return BadRequest(ModelState);
+            }*/
+
             Expense expense = new Expense
             {
                 ExpenseName = expenseDTO.ExpenseName,

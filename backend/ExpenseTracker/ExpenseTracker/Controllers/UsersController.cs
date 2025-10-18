@@ -1,7 +1,9 @@
-﻿using ExpenseTracker.Entities;
+﻿using Azure;
+using ExpenseTracker.Entities;
 using ExpenseTracker.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ExpenseTracker.Controllers
@@ -121,5 +123,60 @@ namespace ExpenseTracker.Controllers
             return CreatedAtRoute("GetUserById", new { id = model.Id }, model);
         }
 
+        [HttpPut]
+        [Route("update")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult UpdateUserById([FromBody] UserDTO userDTO) { 
+            if(userDTO == null || userDTO.Id <=0) return BadRequest();
+
+            var user = UserRepository.Users.Where(u => u.Id == userDTO.Id).FirstOrDefault();
+
+            if(user == null) return NotFound();
+
+            user.Name = userDTO.Name;
+            user.Email = userDTO.Email;
+            user.Password = userDTO.Password;
+
+            return NoContent();
+        }
+
+        // To update single property
+        [HttpPatch]
+        [Route("{id:int}/updatePartial")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult UpdateUserPartialById(int id, [FromBody] JsonPatchDocument<UserDTO> patchDocument)
+        {
+            if (patchDocument == null || id <= 0) return BadRequest();
+
+            var user = UserRepository.Users.Where(u => u.Id == id).FirstOrDefault();
+
+            if (user == null) return NotFound();
+
+            var userDTO = new UserDTO
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Password = user.Password,
+            };
+
+            patchDocument.ApplyTo(userDTO, ModelState);
+
+            if (!ModelState.IsValid) { 
+                return BadRequest(ModelState);
+            }
+
+            user.Name = userDTO.Name;
+            user.Email = userDTO.Email;
+            user.Password = userDTO.Password;
+
+            return NoContent();
+        }
     }
 }

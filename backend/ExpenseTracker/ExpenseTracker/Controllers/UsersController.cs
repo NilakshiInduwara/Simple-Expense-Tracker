@@ -12,6 +12,13 @@ namespace ExpenseTracker.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        private readonly ILogger<UsersController> _logger;
+
+        public UsersController(ILogger<UsersController> logger)
+        {
+            _logger = logger;
+        }
+
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -32,6 +39,8 @@ namespace ExpenseTracker.Controllers
                 users.Add(obj);
             }*/
 
+            _logger.LogInformation("Get Users Information");
+
             var users = UserRepository.Users.Select(user => new UserDTO()
             {
                 Id = user.Id,
@@ -50,12 +59,20 @@ namespace ExpenseTracker.Controllers
         public ActionResult<UserDTO> GetUserById(int id)
         {
             // BadRequest - 400
-            if (id <= 0) return BadRequest();
+            if (id <= 0)
+            {
+                _logger.LogWarning("Bad Request");
+                return BadRequest();
+            }
             
             var user = UserRepository.Users.Where(n => n.Id == id).FirstOrDefault();
 
             // NotFound- 404
-            if (user == null) return NotFound($"User with Id {id} not found.");
+            if (user == null)
+            {
+                _logger.LogError("User not found");
+                return NotFound($"User with Id {id} not found.");
+            }
 
             var userDTO = new UserDTO
             {

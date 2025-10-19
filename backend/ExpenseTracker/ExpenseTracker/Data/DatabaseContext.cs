@@ -30,6 +30,12 @@ namespace ExpenseTracker.Data
                     Password = "Test PW 2",
                 }
             });
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.Property(n => n.Name).IsRequired().HasMaxLength(250);
+                entity.Property(n => n.Email).IsRequired().HasMaxLength(250);
+            });
         }
     }
 }

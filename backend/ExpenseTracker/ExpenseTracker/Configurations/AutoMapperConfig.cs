@@ -7,7 +7,7 @@ namespace ExpenseTracker.Configurations
     public class AutoMapperConfig : Profile
     {
         public AutoMapperConfig() { 
-            CreateMap<User, UserDTO>().ReverseMap();
+            CreateMap<User, UserDTO>().ForMember(n => n.UserName, opt => opt.MapFrom(x => x.Name)).ReverseMap();
             CreateMap<Expense, ExpenseDTO>().ReverseMap();
         }
     }

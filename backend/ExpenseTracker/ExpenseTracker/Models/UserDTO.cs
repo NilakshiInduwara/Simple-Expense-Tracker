@@ -10,7 +10,7 @@ namespace ExpenseTracker.Models
 
         [Required(ErrorMessage = "Please enter the user name")]
         [StringLength(100)]
-        public string Name { get; set; }
+        public string UserName { get; set; }
 
         [Required(ErrorMessage = "Please enter a valid password")]
         [DataType(DataType.Password)]

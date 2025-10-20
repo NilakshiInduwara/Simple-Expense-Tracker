@@ -29,7 +29,7 @@ namespace ExpenseTracker.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<UserDTO> GetUsers()
+        public async Task<ActionResult<UserDTO>> GetUsersAsync()
         {
             /*var users = new List<UserDTO>();
             foreach(var user in UserRepository.Users)
@@ -46,10 +46,10 @@ namespace ExpenseTracker.Controllers
 
             _logger.LogInformation("Get Users Information");
 
-            var users = _dbContext.Users.ToList();
+            var users = await _dbContext.Users.ToListAsync();
 
             // if want to get specific data not all in the entity
-            /*var users = _dbContext.Users.Select(user => new UserDTO()
+            /*var users = await _dbContext.Users.Select(user => new UserDTO()
             {
                 Name = user.Name,
                 Email = user.Email,
@@ -64,7 +64,7 @@ namespace ExpenseTracker.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<UserDTO> GetUserById(int id)
+        public async Task<ActionResult<UserDTO>> GetUserByIdAsync(int id)
         {
             // BadRequest - 400
             if (id <= 0)
@@ -73,7 +73,7 @@ namespace ExpenseTracker.Controllers
                 return BadRequest();
             }
             
-            var user = _dbContext.Users.Where(n => n.Id == id).FirstOrDefault();
+            var user = await _dbContext.Users.Where(n => n.Id == id).FirstOrDefaultAsync();
 
             // NotFound- 404
             if (user == null)
@@ -100,10 +100,10 @@ namespace ExpenseTracker.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<User> GetUserByName(string name) { 
+        public async Task<ActionResult<User>> GetUserByNameAsync(string name) { 
             if(name.IsNullOrEmpty()) return BadRequest();
 
-            var user = _dbContext.Users.Where(n => n.Name == name).FirstOrDefault();
+            var user = await _dbContext.Users.Where(n => n.Name == name).FirstOrDefaultAsync();
 
             if (user == null) return NotFound($"User with name {name} not found.");
             return Ok(user);
@@ -117,7 +117,7 @@ namespace ExpenseTracker.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Route("{id:int}", Name = "DeleteUserById")]
-        public ActionResult<bool> DeleteUser(int id) {
+        public async Task<ActionResult<bool>> DeleteUserAsync(int id) {
             if (id <= 0) return BadRequest();
 
             var user = _dbContext.Users.Where(n => n.Id == id).FirstOrDefault();
@@ -125,7 +125,7 @@ namespace ExpenseTracker.Controllers
             if (user == null) return NotFound($"User with Id {id} not found.");
 
             _dbContext.Users.Remove(user);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
 
             return Ok(true);
         }
@@ -137,10 +137,8 @@ namespace ExpenseTracker.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<UserDTO> CreateUser([FromBody] UserDTO model) { 
+        public async Task<ActionResult<UserDTO>> CreateUserAsync([FromBody] UserDTO model) { 
             if(model == null) return BadRequest();
-
-            int newId = (_dbContext.Users.LastOrDefault()?.Id ?? 0) + 1;
 
             User user = new User() { 
                 Name = model.Name,
@@ -148,10 +146,10 @@ namespace ExpenseTracker.Controllers
                 Password = model.Password,
             };
 
-            _dbContext.Users.Add(user);
-            _dbContext.SaveChanges();
+            await _dbContext.Users.AddAsync(user);
+            await _dbContext.SaveChangesAsync();
 
-            model.Id = newId;
+            model.Id = user.Id;
 
             return CreatedAtRoute("GetUserById", new { id = model.Id }, model);
         }
@@ -164,10 +162,10 @@ namespace ExpenseTracker.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult UpdateUserById([FromBody] UserDTO userDTO) { 
+        public async Task<ActionResult> UpdateUserByIdAsync([FromBody] UserDTO userDTO) { 
             if(userDTO == null || userDTO.Id <=0) return BadRequest();
 
-            var user = _dbContext.Users.AsNoTracking().Where(u => u.Id == userDTO.Id).FirstOrDefault();
+            var user = await _dbContext.Users.AsNoTracking().Where(u => u.Id == userDTO.Id).FirstOrDefaultAsync();
 
             if(user == null) return NotFound();
 
@@ -184,7 +182,7 @@ namespace ExpenseTracker.Controllers
             user.Email = userDTO.Email;
             user.Password = userDTO.Password;*/
 
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
 
             return NoContent();
         }
@@ -198,11 +196,11 @@ namespace ExpenseTracker.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult UpdateUserPartialById(int id, [FromBody] JsonPatchDocument<UserDTO> patchDocument)
+        public async Task<ActionResult> UpdateUserPartialByIdAsync(int id, [FromBody] JsonPatchDocument<UserDTO> patchDocument)
         {
             if (patchDocument == null || id <= 0) return BadRequest();
 
-            var user = _dbContext.Users.Where(u => u.Id == id).FirstOrDefault();
+            var user = await _dbContext.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
 
             if (user == null) return NotFound();
 
@@ -224,7 +222,7 @@ namespace ExpenseTracker.Controllers
             user.Email = userDTO.Email;
             user.Password = userDTO.Password;
 
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
 
             return NoContent();
         }

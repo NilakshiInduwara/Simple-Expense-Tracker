@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.IdentityModel.Tokens;
+using ExpenseTracker.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Controllers
 {
@@ -13,12 +15,15 @@ namespace ExpenseTracker.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ILogger<UsersController> _logger;
+        private readonly DatabaseContext _dbContext;
 
-        public UsersController(ILogger<UsersController> logger)
+        public UsersController(ILogger<UsersController> logger, DatabaseContext dbContext)
         {
             _logger = logger;
+            _dbContext = dbContext;
         }
 
+        #region GetUsers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -41,7 +46,7 @@ namespace ExpenseTracker.Controllers
 
             _logger.LogInformation("Get Users Information");
 
-            var users = UserRepository.Users.Select(user => new UserDTO()
+            var users = _dbContext.Users.Select(user => new UserDTO()
             {
                 Id = user.Id,
                 Name = user.Name,
@@ -50,7 +55,9 @@ namespace ExpenseTracker.Controllers
             }).ToList();
             return Ok(users);
         }
+        #endregion
 
+        #region GetUserById
         [HttpGet("{id:int}", Name = "GetUserById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -65,7 +72,7 @@ namespace ExpenseTracker.Controllers
                 return BadRequest();
             }
             
-            var user = UserRepository.Users.Where(n => n.Id == id).FirstOrDefault();
+            var user = _dbContext.Users.Where(n => n.Id == id).FirstOrDefault();
 
             // NotFound- 404
             if (user == null)
@@ -84,7 +91,9 @@ namespace ExpenseTracker.Controllers
             };
             return Ok(userDTO);
         }
+        #endregion
 
+        #region GetUserByName
         [HttpGet("{name:alpha}", Name = "GetUserByName")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -93,12 +102,14 @@ namespace ExpenseTracker.Controllers
         public ActionResult<User> GetUserByName(string name) { 
             if(name.IsNullOrEmpty()) return BadRequest();
 
-            var user = UserRepository.Users.Where(n => n.Name == name).FirstOrDefault();
+            var user = _dbContext.Users.Where(n => n.Name == name).FirstOrDefault();
 
             if (user == null) return NotFound($"User with name {name} not found.");
             return Ok(user);
         }
+        #endregion
 
+        #region DeleteUserById
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -108,14 +119,18 @@ namespace ExpenseTracker.Controllers
         public ActionResult<bool> DeleteUser(int id) {
             if (id <= 0) return BadRequest();
 
-            var user = UserRepository.Users.Where(n => n.Id == id).FirstOrDefault();
+            var user = _dbContext.Users.Where(n => n.Id == id).FirstOrDefault();
 
             if (user == null) return NotFound($"User with Id {id} not found.");
 
-            UserRepository.Users.Remove(user);
+            _dbContext.Users.Remove(user);
+            _dbContext.SaveChanges();
+
             return Ok(true);
         }
+        #endregion
 
+        #region create
         [HttpPost]
         [Route("create")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -124,22 +139,24 @@ namespace ExpenseTracker.Controllers
         public ActionResult<UserDTO> CreateUser([FromBody] UserDTO model) { 
             if(model == null) return BadRequest();
 
-            int newId = (UserRepository.Users.LastOrDefault()?.Id ?? 0) + 1;
+            int newId = (_dbContext.Users.LastOrDefault()?.Id ?? 0) + 1;
 
             User user = new User() { 
-                Id = newId,
                 Name = model.Name,
                 Email = model.Email,
                 Password = model.Password,
             };
 
-            UserRepository.Users.Add(user);
+            _dbContext.Users.Add(user);
+            _dbContext.SaveChanges();
 
             model.Id = newId;
 
             return CreatedAtRoute("GetUserById", new { id = model.Id }, model);
         }
+        #endregion
 
+        #region update
         [HttpPut]
         [Route("update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -149,7 +166,7 @@ namespace ExpenseTracker.Controllers
         public ActionResult UpdateUserById([FromBody] UserDTO userDTO) { 
             if(userDTO == null || userDTO.Id <=0) return BadRequest();
 
-            var user = UserRepository.Users.Where(u => u.Id == userDTO.Id).FirstOrDefault();
+            var user = _dbContext.Users.Where(u => u.Id == userDTO.Id).FirstOrDefault();
 
             if(user == null) return NotFound();
 
@@ -159,8 +176,10 @@ namespace ExpenseTracker.Controllers
 
             return NoContent();
         }
+        #endregion
 
-        // To update single property
+        #region updatePartial
+        //To update single property
         [HttpPatch]
         [Route("{id:int}/updatePartial")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -171,7 +190,7 @@ namespace ExpenseTracker.Controllers
         {
             if (patchDocument == null || id <= 0) return BadRequest();
 
-            var user = UserRepository.Users.Where(u => u.Id == id).FirstOrDefault();
+            var user = _dbContext.Users.Where(u => u.Id == id).FirstOrDefault();
 
             if (user == null) return NotFound();
 
@@ -193,7 +212,11 @@ namespace ExpenseTracker.Controllers
             user.Email = userDTO.Email;
             user.Password = userDTO.Password;
 
+            _dbContext.SaveChanges();
+
             return NoContent();
         }
+        #endregion
+
     }
 }

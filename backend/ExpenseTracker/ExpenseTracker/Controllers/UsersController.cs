@@ -46,13 +46,14 @@ namespace ExpenseTracker.Controllers
 
             _logger.LogInformation("Get Users Information");
 
-            var users = _dbContext.Users.Select(user => new UserDTO()
+            var users = _dbContext.Users.ToList();
+
+            // if want to get specific data not all in the entity
+            /*var users = _dbContext.Users.Select(user => new UserDTO()
             {
-                Id = user.Id,
                 Name = user.Name,
                 Email = user.Email,
-                Password = user.Password,
-            }).ToList();
+            }).ToList();*/
             return Ok(users);
         }
         #endregion
@@ -166,13 +167,24 @@ namespace ExpenseTracker.Controllers
         public ActionResult UpdateUserById([FromBody] UserDTO userDTO) { 
             if(userDTO == null || userDTO.Id <=0) return BadRequest();
 
-            var user = _dbContext.Users.Where(u => u.Id == userDTO.Id).FirstOrDefault();
+            var user = _dbContext.Users.AsNoTracking().Where(u => u.Id == userDTO.Id).FirstOrDefault();
 
             if(user == null) return NotFound();
 
-            user.Name = userDTO.Name;
+            var newUser = new User()
+            {
+                Id = user.Id,
+                Name = userDTO.Name,
+                Email = userDTO.Email,
+                Password = userDTO.Password
+            };
+            _dbContext.Users.Update(newUser);
+
+            /*user.Name = userDTO.Name;
             user.Email = userDTO.Email;
-            user.Password = userDTO.Password;
+            user.Password = userDTO.Password;*/
+
+            _dbContext.SaveChanges();
 
             return NoContent();
         }

@@ -1,12 +1,7 @@
-﻿using Azure;
-using ExpenseTracker.Entities;
+﻿using ExpenseTracker.Entities;
 using ExpenseTracker.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.IdentityModel.Tokens;
-using ExpenseTracker.Data;
-using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using ExpenseTracker.Data.Repository;
 
@@ -18,9 +13,9 @@ namespace ExpenseTracker.Controllers
     {
         private readonly ILogger<UsersController> _logger;        
         private readonly IMapper _mapper;
-        private readonly IExpenseTrackerRepository<User> _userRepository;
+        private readonly IUserRepository _userRepository;
 
-        public UsersController(ILogger<UsersController> logger, IMapper mapper, IExpenseTrackerRepository<User> userRepository)
+        public UsersController(ILogger<UsersController> logger, IMapper mapper, IUserRepository userRepository)
         {
             _logger = logger;
             _mapper = mapper;

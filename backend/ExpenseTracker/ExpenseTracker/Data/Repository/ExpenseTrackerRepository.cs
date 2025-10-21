@@ -17,15 +17,11 @@ namespace ExpenseTracker.Data.Repository
             return await _dbSet.ToListAsync();
         }
 
-        public async Task<T> GetByIdAsync(Expression<Func<T, bool>> filter, bool useNoTracking)
+        public async Task<T> GetFilteredDataAsync(Expression<Func<T, bool>> filter, bool useNoTracking)
         {
             if (useNoTracking)
                 return await _dbSet.AsNoTracking().Where(filter).FirstOrDefaultAsync();
-            return await _dbSet.Where(filter).FirstOrDefaultAsync();
-        }
 
-        public async Task<T> GetByNameAsync(Expression<Func<T, bool>> filter)
-        {
             return await _dbSet.Where(filter).FirstOrDefaultAsync();
         }
 

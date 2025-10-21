@@ -62,7 +62,7 @@ namespace ExpenseTracker.Controllers
                 return BadRequest();
             }
             
-            var user = await _userRepository.GetByIdAsync(user => user.Id == id);
+            var user = await _userRepository.GetFilteredDataAsync(user => user.Id == id);
 
             // NotFound- 404
             if (user == null)
@@ -86,7 +86,7 @@ namespace ExpenseTracker.Controllers
         public async Task<ActionResult<User>> GetUserByNameAsync(string name) { 
             if(string.IsNullOrEmpty(name)) return BadRequest();
 
-            var user = await _userRepository.GetByIdAsync(user => user.Name.ToLower().Contains(name.ToLower()));
+            var user = await _userRepository.GetFilteredDataAsync(user => user.Name.ToLower().Contains(name.ToLower()));
 
             if (user == null) return NotFound($"User with name {name} not found.");
             return Ok(user);
@@ -103,7 +103,7 @@ namespace ExpenseTracker.Controllers
         public async Task<ActionResult<bool>> DeleteUserAsync(int id) {
             if (id <= 0) return BadRequest();
 
-            var user = await _userRepository.GetByIdAsync(user => user.Id == id);
+            var user = await _userRepository.GetFilteredDataAsync(user => user.Id == id);
 
             if (user == null) return NotFound($"User with Id {id} not found.");
 
@@ -142,7 +142,7 @@ namespace ExpenseTracker.Controllers
         public async Task<ActionResult> UpdateUserByIdAsync([FromBody] UserDTO userDTO) { 
             if(userDTO == null || userDTO.Id <=0) return BadRequest();
 
-            var user = await _userRepository.GetByIdAsync(user => user.Id == userDTO.Id, true);
+            var user = await _userRepository.GetFilteredDataAsync(user => user.Id == userDTO.Id, true);
 
             if (user == null) return NotFound();
 
@@ -166,7 +166,7 @@ namespace ExpenseTracker.Controllers
         {
             if (patchDocument == null || id <= 0) return BadRequest();
 
-            var user = await _userRepository.GetByIdAsync(user => user.Id == id, true);
+            var user = await _userRepository.GetFilteredDataAsync(user => user.Id == id, true);
 
             if (user == null) return NotFound();
 

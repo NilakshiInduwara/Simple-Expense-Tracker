@@ -1,5 +1,6 @@
 using ExpenseTracker.Configurations;
 using ExpenseTracker.Data;
+using ExpenseTracker.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperConfig));
+
+builder.Services.AddScoped(typeof(IExpenseTrackerRepository<>), typeof(ExpenseTrackerRepository<>));
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
 {

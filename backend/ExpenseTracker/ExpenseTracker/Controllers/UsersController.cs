@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using ExpenseTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
+using ExpenseTracker.Data.Repository;
 
 namespace ExpenseTracker.Controllers
 {
@@ -15,15 +16,15 @@ namespace ExpenseTracker.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly ILogger<UsersController> _logger;
-        private readonly DatabaseContext _dbContext;
+        private readonly ILogger<UsersController> _logger;        
         private readonly IMapper _mapper;
+        private readonly IExpenseTrackerRepository<User> _userRepository;
 
-        public UsersController(ILogger<UsersController> logger, DatabaseContext dbContext, IMapper mapper)
+        public UsersController(ILogger<UsersController> logger, IMapper mapper, IExpenseTrackerRepository<User> userRepository)
         {
             _logger = logger;
-            _dbContext = dbContext;
             _mapper = mapper;
+            _userRepository = userRepository;
         }
 
         #region GetUsers
@@ -44,7 +45,7 @@ namespace ExpenseTracker.Controllers
             }).ToList();*/
             #endregion
 
-            var users = await _dbContext.Users.ToListAsync();
+            var users = await _userRepository.GetAllAsync();
             var usersDTOData = _mapper.Map<List<UserDTO>>(users);
 
             return Ok(usersDTOData);
@@ -66,7 +67,7 @@ namespace ExpenseTracker.Controllers
                 return BadRequest();
             }
             
-            var user = await _dbContext.Users.Where(n => n.Id == id).FirstOrDefaultAsync();
+            var user = await _userRepository.GetByIdAsync(user => user.Id == id);
 
             // NotFound- 404
             if (user == null)
@@ -90,7 +91,7 @@ namespace ExpenseTracker.Controllers
         public async Task<ActionResult<User>> GetUserByNameAsync(string name) { 
             if(string.IsNullOrEmpty(name)) return BadRequest();
 
-            var user = await _dbContext.Users.Where(n => n.Name == name).FirstOrDefaultAsync();
+            var user = await _userRepository.GetByIdAsync(user => user.Name.ToLower().Contains(name.ToLower()));
 
             if (user == null) return NotFound($"User with name {name} not found.");
             return Ok(user);
@@ -107,12 +108,11 @@ namespace ExpenseTracker.Controllers
         public async Task<ActionResult<bool>> DeleteUserAsync(int id) {
             if (id <= 0) return BadRequest();
 
-            var user = _dbContext.Users.Where(n => n.Id == id).FirstOrDefault();
+            var user = await _userRepository.GetByIdAsync(user => user.Id == id);
 
             if (user == null) return NotFound($"User with Id {id} not found.");
 
-            _dbContext.Users.Remove(user);
-            await _dbContext.SaveChangesAsync();
+            await _userRepository.DeleteAsync(user);
 
             return Ok(true);
         }
@@ -129,10 +129,9 @@ namespace ExpenseTracker.Controllers
 
             User user = _mapper.Map<User>(model);
 
-            await _dbContext.Users.AddAsync(user);
-            await _dbContext.SaveChangesAsync();
+            var userAfterCreation = await _userRepository.CreateAsync(user);
 
-            model.Id = user.Id;
+            model.Id = userAfterCreation.Id;
 
             return CreatedAtRoute("GetUserById", new { id = model.Id }, model);
         }
@@ -148,18 +147,13 @@ namespace ExpenseTracker.Controllers
         public async Task<ActionResult> UpdateUserByIdAsync([FromBody] UserDTO userDTO) { 
             if(userDTO == null || userDTO.Id <=0) return BadRequest();
 
-            var user = await _dbContext.Users.AsNoTracking().Where(u => u.Id == userDTO.Id).FirstOrDefaultAsync();
+            var user = await _userRepository.GetByIdAsync(user => user.Id == userDTO.Id, true);
 
-            if(user == null) return NotFound();
+            if (user == null) return NotFound();
 
             var newUser = _mapper.Map<User>(userDTO);
-            _dbContext.Users.Update(newUser);
 
-            /*user.Name = userDTO.Name;
-            user.Email = userDTO.Email;
-            user.Password = userDTO.Password;*/
-
-            await _dbContext.SaveChangesAsync();
+            await _userRepository.UpdateAsync(newUser);
 
             return NoContent();
         }
@@ -177,7 +171,7 @@ namespace ExpenseTracker.Controllers
         {
             if (patchDocument == null || id <= 0) return BadRequest();
 
-            var user = await _dbContext.Users.AsNoTracking().Where(u => u.Id == id).FirstOrDefaultAsync();
+            var user = await _userRepository.GetByIdAsync(user => user.Id == id, true);
 
             if (user == null) return NotFound();
 
@@ -191,8 +185,7 @@ namespace ExpenseTracker.Controllers
 
             user = _mapper.Map<User>(userDTO);
 
-            _dbContext.Users.Update(user);
-            await _dbContext.SaveChangesAsync();
+            _userRepository.UpdateAsync(user);
 
             return NoContent();
         }

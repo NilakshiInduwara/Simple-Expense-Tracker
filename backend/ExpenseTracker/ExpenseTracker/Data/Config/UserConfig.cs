@@ -33,6 +33,11 @@ namespace ExpenseTracker.Data.Config
                     Password = "Test PW 2",
                 }
             });
+
+            builder.HasOne(n => n.Category)
+                .WithMany(n => n.Users)
+                .HasForeignKey(n => n.CategoryId)
+                .HasConstraintName("FK_User_Category");
         }
     }
 }
